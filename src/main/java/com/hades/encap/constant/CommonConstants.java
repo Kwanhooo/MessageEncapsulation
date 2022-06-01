@@ -1,6 +1,6 @@
 package com.hades.encap.constant;
 
-public interface NetworkConstant {
+public interface CommonConstants {
     /**
      * 目标主机的MAC地址
      */

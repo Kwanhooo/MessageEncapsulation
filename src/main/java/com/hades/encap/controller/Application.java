@@ -1,6 +1,5 @@
 package com.hades.encap.controller;
 
-import com.hades.encap.handler.EncapsulationHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -9,7 +8,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class Main {
+public class Application {
 
 
     /**
@@ -20,6 +19,7 @@ public class Main {
      * @author Kwanho
      */
     public static void main(String[] args) {
+        com.hades.encap.utils.CommonUtils.printNoBug();
         assert args.length == 2;
 
         // 获得参数
