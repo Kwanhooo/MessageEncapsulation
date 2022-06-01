@@ -1,6 +1,6 @@
 package com.hades.encap.controller;
 
-import com.hades.encap.handler.MainHandler;
+import com.hades.encap.handler.EncapsulationHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -40,7 +40,7 @@ public class Main {
         log.info("TCP Data: {}", tcpData);
 
         // 转到主处理器
-        MainHandler handler = new MainHandler();
+        EncapsulationHandler handler = new EncapsulationHandler();
         String ipv6Data = handler.handle(tcpData);
 
         // 输出到IPv6数据文件
@@ -51,7 +51,6 @@ public class Main {
             log.error("写入IPv6数据文件失败！");
             throw new RuntimeException(e);
         }
-
         log.info("IPv6 Data: {}", ipv6Data);
     }
 }
