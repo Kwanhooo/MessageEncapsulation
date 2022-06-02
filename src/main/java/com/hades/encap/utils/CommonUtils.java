@@ -60,6 +60,35 @@ public class CommonUtils {
     }
 
     /**
+     * 优化打印
+     *
+     * @param ipv6Data ipv6报文
+     * @return 优化打印后的ipv6报文
+     * @author Kwanho
+     */
+    public static String prettyPrint(String ipv6Data) {
+        StringBuilder sb = new StringBuilder();
+        System.out.println("<===== IPv6 报文 =====>");
+        int count = 0;
+        for (int i = 0; i < ipv6Data.length(); i++) {
+            System.out.print(ipv6Data.charAt(i));
+            sb.append(ipv6Data.charAt(i));
+            count++;
+            if (count % 2 == 0) {
+                System.out.print(" ");
+                sb.append(" ");
+            }
+            if (count % 16 == 0) {
+                System.out.println();
+                sb.append("\n");
+            }
+        }
+        System.out.println("<===== 共 " + ipv6Data.length() + " bit =====>");
+        return sb.toString();
+    }
+
+
+    /**
      * 玄学启动
      *
      * @author kwanho

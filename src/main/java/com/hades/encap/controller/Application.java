@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static com.hades.encap.utils.CommonUtils.prettyPrint;
+
 @Slf4j
 public class Application {
     /**
@@ -45,13 +47,14 @@ public class Application {
         String ipv6Data = handler.handle(tcpData);
 
         // 输出到IPv6数据文件
+        String prettyIPv6Data = prettyPrint(ipv6Data);
         File ipv6File = new File(ipv6DataFile);
         try {
-            FileUtils.writeStringToFile(ipv6File, ipv6Data, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(ipv6File, prettyIPv6Data, StandardCharsets.UTF_8);
         } catch (IOException e) {
             log.error("写入IPv6数据文件失败！");
             throw new RuntimeException(e);
         }
-        log.info("IPv6 Data: {}", ipv6Data);
+        log.info("已写入IPv6数据文件：{}", ipv6File.getAbsoluteFile());
     }
 }
