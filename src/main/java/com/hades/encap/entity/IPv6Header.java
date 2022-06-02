@@ -18,7 +18,7 @@ public class IPv6Header {
     private long flowLabel;
     private int payloadLength;
     private IPv6Header nextHeader;
-    private String hopLimit;
+    private int hopLimit;
     private IPAddress sourceAddress;
     private IPAddress destinationAddress;
 

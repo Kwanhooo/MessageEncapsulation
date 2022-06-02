@@ -64,7 +64,7 @@ public class CommonUtils {
      *
      * @author kwanho
      */
-    public static void printNoBug() {
+    public static void bugsGoAway() {
         System.out.println(" .................IPv6报文封装和地址生成..............");
         System.out.println(" ................Powered by Hades Group.............");
         System.out.println(" ...................................................");
@@ -89,5 +89,6 @@ public class CommonUtils {
         System.out.println("                       ‘=---=’                      ");
         System.out.println("                                                    ");
         System.out.println("....................佛祖开光，永无BUG...................");
+        System.out.println();
     }
 }

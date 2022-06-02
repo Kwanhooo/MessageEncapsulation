@@ -7,12 +7,17 @@ package com.hades.encap.constant;
  * @author kwanho
  */
 public enum IPv6HeaderTypes {
-    SIMPLE(1000, "普通报头"),
-    HOP_BY_HOP(1001, "逐跳选项头部"),
-    ROUTING(1002, "路由头部"),
-    DESTINATION(1003, "目的选项头部"),
-    AUTHENTICATION(1004, "认证头部"),
-    SECURITY(1005, "封装安全载荷头部");
+    HOP_BY_HOP_OPTIONS_HEADER(0, "Hop-by-Hop Options Header"),
+    TCP(6, "TCP"),
+    UDP(17, "UDP"),
+    ENCAPSULATED_IPv6_HEADER(41, "Encapsulated IPv6 Header"),
+    ROUTING_HEADER(43, "Routing Header"),
+    FRAGMENT_HEADER(44, "Fragment Header"),
+    ENCAPSULATING_SECURITY_PAYLOAD_HEADER(50, "Encapsulating Security Payload Header"),
+    AUTHENTICATION_HEADER(51, "Authentication Header"),
+    ICMPv6(58, "ICMPv6"),
+    NO_NEXT_HEADER(59, "No Next Header"),
+    DESTINATION_OPTIONS_HEADER(60, "Destination Options Header");
 
     /**
      * 类型码

@@ -1,5 +1,6 @@
 package com.hades.encap.controller;
 
+import com.hades.encap.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -9,22 +10,22 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class Application {
-
-
     /**
      * 全局入口
      *
      * @param args 命令行参数
-     * @apiNote 通过 程序名 TCP数据(文件位置) IPv6数据(文件位置) 的方式来启动
+     * @apiNote 通过附加命令行参数 程序名 TCP数据(文件位置) IPv6数据(文件位置) 的方式来启动
      * @author Kwanho
      */
     public static void main(String[] args) {
-        com.hades.encap.utils.CommonUtils.printNoBug();
+        new Thread(CommonUtils::bugsGoAway).start();
+
+        // 命令行参数检查
         assert args.length == 2;
 
         // 获得参数
-        String tcpDataFile = args[0];
-        String ipv6DataFile = args[1];
+        String tcpDataFile = args[0].trim();
+        String ipv6DataFile = args[1].trim();
         log.info("tcpDataFile: {}", tcpDataFile);
         log.info("ipv6DataFile: {}", ipv6DataFile);
 
