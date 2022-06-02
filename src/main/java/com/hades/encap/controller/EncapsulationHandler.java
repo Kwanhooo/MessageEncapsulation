@@ -122,7 +122,9 @@ public class EncapsulationHandler {
                 case 'f':
                     sb.append("1111");
                     break;
-
+                default:
+                    System.out.println("error");
+                    break;
 
             }
         }
