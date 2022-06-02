@@ -8,6 +8,11 @@ import lombok.Setter;
 
 import java.util.Objects;
 
+/**
+ * IPv6报头类
+ *
+ * @author Kwanho
+ */
 @Getter
 @Setter
 @AllArgsConstructor

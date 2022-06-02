@@ -13,6 +13,13 @@ import java.util.List;
 public class EncapsulationHandler {
     private IPv6Header basicHeader;
 
+    /**
+     * 主控
+     *
+     * @param tcpData TCP数据
+     * @return 二进制的IPv6报文数据
+     * @author Kwanho
+     */
     public String handle(@NotNull String tcpData) {
         // 构造IPv6报头
         basicHeader = getIPv6Header(tcpData);
@@ -24,6 +31,13 @@ public class EncapsulationHandler {
         return insertPayload(basicHeader, extendedHeaders, tcpData);
     }
 
+    /**
+     * 生成一个IPv6头部
+     *
+     * @param tcpData 原始TCP数据
+     * @return IPv6头部
+     * @author Kwanho
+     */
     private IPv6Header getIPv6Header(@NotNull String tcpData) {
         IPv6Header header = new IPv6Header();
         header.setHeaderType(IPv6HeaderTypes.ENCAPSULATED_IPv6_HEADER);
@@ -38,6 +52,13 @@ public class EncapsulationHandler {
         return header;
     }
 
+    /**
+     * 生成指定数量的IPv6拓展头部
+     *
+     * @param tcpData 原始TCP数据
+     * @return IPv6拓展头部列表
+     * @author Kwanho
+     */
     private List<IPv6Header> getIPv6ExtendedHeaders(@NotNull String tcpData) {
         List<IPv6Header> extendedHeaders = new ArrayList<>();
         IPv6Header lastHeader = basicHeader;
@@ -52,14 +73,33 @@ public class EncapsulationHandler {
         return extendedHeaders;
     }
 
+    /**
+     * 插入有效载荷
+     *
+     * @param basicHeader    基本头部
+     * @param extendedHeader 拓展头部
+     * @param tcpData        TCP数据
+     * @return 二进制的IPv6报文数据
+     * @author Kwanho
+     */
     private String insertPayload(IPv6Header basicHeader, List<IPv6Header> extendedHeader, String tcpData) {
         String sb = getHeaderBinaryString(basicHeader);
 
         // 把tcp数据转换成二进制字符串
-        String binaryString = getFixedBinaryString(tcpData, tcpData.length() * 4);
+        String binaryTCPData = getFixedBinaryString(tcpData, tcpData.length() * 4);
+        log.info("二进制TCP数据: {}", binaryTCPData);
+        sb += binaryTCPData;
         return sb;
     }
 
+    /**
+     * 获取固定位数的二进制字符串
+     *
+     * @param number       原始数字
+     * @param neededLength 需要的二进制字符串长度
+     * @return 二进制字符串
+     * @author Kwanho
+     */
     public static String getFixedBinaryString(Long number, int neededLength) {
         String originalStr = Long.toBinaryString(number);
         StringBuilder sb = new StringBuilder();
@@ -70,6 +110,14 @@ public class EncapsulationHandler {
         return (sb.toString());
     }
 
+    /**
+     * 获取固定位数的二进制字符串
+     *
+     * @param number       原始数字
+     * @param neededLength 需要的二进制字符串长度
+     * @return 二进制字符串
+     * @author Himxs
+     */
     public static String getFixedBinaryString(String number, int neededLength) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < number.length(); i++) {
@@ -132,14 +180,38 @@ public class EncapsulationHandler {
         return sb.toString();
     }
 
+    /**
+     * 将IPv6头部转换成二进制字符串
+     *
+     * @param header 头部
+     * @return 二进制字符串
+     */
     private String getHeaderBinaryString(IPv6Header header) {
-        return getFixedBinaryString(header.getVersion(), 4) +
-                getFixedBinaryString(header.getTrafficClass(), 8) +
-                getFixedBinaryString(header.getFlowLabel(), 20) +
-                getFixedBinaryString((long) header.getPayloadLength(), 16) +
-                getFixedBinaryString((long) header.getNextHeader().getHeaderType().getCode(), 8) +
-                getFixedBinaryString((long) header.getHopLimit(), 8) +
-                header.getSourceAddress().getBinaryAddress() +
-                header.getDestinationAddress().getBinaryAddress();
+        StringBuilder sb = new StringBuilder();
+        String version = getFixedBinaryString(header.getVersion(), 4);
+        log.info("version: " + version);
+        sb.append(version);
+        String trafficClass = getFixedBinaryString(header.getTrafficClass(), 8);
+        log.info("trafficClass: " + trafficClass);
+        sb.append(trafficClass);
+        String flowLabel = getFixedBinaryString(header.getFlowLabel(), 20);
+        log.info("flowLabel: " + flowLabel);
+        sb.append(flowLabel);
+        String payloadLength = getFixedBinaryString((long) header.getPayloadLength(), 16);
+        log.info("payloadLength: " + payloadLength);
+        sb.append(payloadLength);
+        String nextHeader = getFixedBinaryString((long) header.getNextHeader().getHeaderType().getCode(), 8);
+        log.info("nextHeader: " + nextHeader);
+        sb.append(nextHeader);
+        String hopLimit = getFixedBinaryString((long) header.getHopLimit(), 8);
+        log.info("hopLimit: " + hopLimit);
+        sb.append(hopLimit);
+        String sourceAddress = header.getSourceAddress().getBinaryAddress();
+        log.info("sourceAddress: " + sourceAddress);
+        sb.append(sourceAddress);
+        String destinationAddress = header.getDestinationAddress().getBinaryAddress();
+        log.info("destinationAddress: " + destinationAddress);
+        sb.append(destinationAddress);
+        return sb.toString();
     }
 }

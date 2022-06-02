@@ -9,6 +9,11 @@ import java.util.Objects;
 
 import static com.hades.encap.controller.EncapsulationHandler.getFixedBinaryString;
 
+/**
+ * IPv6地址类
+ *
+ * @author Kwanho
+ */
 @Getter
 @Setter
 @AllArgsConstructor

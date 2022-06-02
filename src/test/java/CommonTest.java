@@ -3,12 +3,22 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Scanner;
 
-public class Tester {
+public class CommonTest {
+    /**
+     * 测试获取MAC地址方法
+     *
+     * @author Kwanho
+     */
     @Test
     public void test() {
         System.out.println(CommonUtils.getMacAddressLinux());
     }
 
+    /**
+     * 输入字符串，输出长度
+     *
+     * @author Kwanho
+     */
     public static void main(String[] args) {
         // 控制台输入
         Scanner scanner = new Scanner(System.in);
