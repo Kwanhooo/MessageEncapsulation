@@ -1,7 +1,5 @@
 package com.hades.encap.controller;
 
-import com.hades.encap.entity.AuthenticationHeader;
-import com.hades.encap.entity.ExtendedHeader;
 import com.hades.encap.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -42,6 +40,8 @@ public class Application {
             log.error("读取TCP数据文件失败！");
             throw new RuntimeException(e);
         }
+        // 消除tcpData中的空格和换行
+        tcpData = tcpData.replaceAll("\\s", "");
         log.info("TCP Data: {}", tcpData);
 
         // 转到主处理器
@@ -59,6 +59,4 @@ public class Application {
         }
         log.info("已写入IPv6数据文件：{}", ipv6File.getAbsoluteFile());
     }
-
-    ExtendedHeader extendedHeader = new AuthenticationHeader();
 }

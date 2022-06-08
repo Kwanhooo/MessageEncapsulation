@@ -24,8 +24,11 @@ public class EncapsulationHandler {
         fixedHeader = getFixedIPv6Header(tcpData);
         log.debug("basicHeader: {}", fixedHeader);
         // 构造IPv6拓展报头
-        List<ExtendedHeader> extendedHeaders = getIPv6ExtendedHeaders(tcpData);
-        log.debug("extendedHeaders: {}", extendedHeaders);
+        List<ExtendedHeader> extendedHeaders = getIPv6ExtendedHeaders();
+        log.info("extendedHeaders: {}", extendedHeaders);
+        for (ExtendedHeader extendedHeader : extendedHeaders) {
+            log.debug("extendedHeader: {}", extendedHeader);
+        }
         // 插入有效载荷
         return insertPayload(fixedHeader, extendedHeaders, tcpData);
     }
@@ -37,6 +40,7 @@ public class EncapsulationHandler {
      * @return IPv6头部
      * @author Kwanho
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private FixedHeader getFixedIPv6Header(@NotNull String tcpData) {
         FixedHeader header = new FixedHeader();
         header.setHeaderType(IPv6HeaderTypes.ENCAPSULATED_IPv6_HEADER);
@@ -54,52 +58,54 @@ public class EncapsulationHandler {
     /**
      * 生成指定数量的IPv6拓展头部
      *
-     * @param tcpData 原始TCP数据
      * @return IPv6拓展头部列表
      * @author Kwanho
      */
-    private List<ExtendedHeader> getIPv6ExtendedHeaders(@NotNull String tcpData) {
+    private List<ExtendedHeader> getIPv6ExtendedHeaders() {
         List<ExtendedHeader> headers = new ArrayList<>();
         ExtendedHeader header;
-        int amount = (int) (Math.random() * 5);
-        ArrayList<Integer> serial = new ArrayList<>();
-        int times = (int) Math.random() * 4;
-        for (int i = 0; i < times; i++) {
+        int amountToGenerate = (int) (Math.random() * 4);
+        for (int i = 0; i < amountToGenerate; i++) {
             int rand = (int) (Math.random() * 4);
             String preNextHeader = "";
             switch (rand) {
-                case 0:
+                case 0 -> {
+                    log.info("生成 => AuthenticationHeader");
                     header = new AuthenticationHeader();
                     preNextHeader = "00110011";
-                    break;
-                case 1:
+                }
+                case 1 -> {
+                    log.info("生成 => FragmentHeader");
                     header = new FragmentHeader();
                     preNextHeader = "00101100";
-                    break;
-                case 2:
+                }
+                case 2 -> {
+                    log.info("生成 => DestinationOptionsHeader");
                     header = new OptionsPerHopHeader();
                     preNextHeader = "00000000";
-                    break;
-                case 3:
+                }
+                case 3 -> {
+                    log.info("生成 => RoutingHeader");
                     header = new RouteHeader();
                     preNextHeader = "00101011";
-                    break;
-                default:
+                }
+                default -> {
+                    log.info("生成 => UnknownHeader");
                     header = null;
-                    break;
+                }
             }
 
             headers.add(header);
+
             if (i == 0) {
                 this.fixedHeader.setNextHeader(preNextHeader);
-            } else if (i != times - 1 && i > 0) {
+            } else {
                 headers.get(i - 1).setNextHeader(preNextHeader);
-            } else if (i == times - 1) {
-                headers.get(i - 1).setNextHeader(preNextHeader);
-                headers.get(i - 1).setNextHeader("00000110");
+            }
+            if (i == amountToGenerate - 1) {
+                headers.get(i).setNextHeader("00000110");
             }
         }
-
         return headers;
     }
 
@@ -113,13 +119,28 @@ public class EncapsulationHandler {
      * @author Kwanho
      */
     private String insertPayload(FixedHeader basicHeader, List<ExtendedHeader> extendedHeader, String tcpData) {
-        String sb = getHeaderBinaryString(basicHeader);
+        // 输出基本头部
+        StringBuilder finalData = new StringBuilder(getHeaderBinaryString(basicHeader));
 
-        // 把tcp数据转换成二进制字符串
-        String binaryTCPData = getFixedBinaryString(tcpData, tcpData.length() * 4);
+        // 输出拓展头部
+        for (ExtendedHeader header : extendedHeader) {
+            finalData.append(header.toString());
+        }
+
+        String binaryTCPData;
+        // 如果传入的是16进制的话，把tcp数据转换成二进制字符串
+        if (tcpData.matches("^[0-9a-fA-F]+$")) {
+            log.info("传入的是16进制的TCP数据");
+            binaryTCPData = getFixedBinaryString(tcpData, tcpData.length() * 4);
+        }
+        else {
+            log.info("传入的是二进制的TCP数据");
+            binaryTCPData = tcpData;
+        }
+
         log.info("二进制TCP数据: {}", binaryTCPData);
-        sb += binaryTCPData;
-        return sb;
+        finalData.append(binaryTCPData);
+        return finalData.toString();
     }
 
     /**
@@ -132,12 +153,8 @@ public class EncapsulationHandler {
      */
     public static String getFixedBinaryString(Long number, int neededLength) {
         String originalStr = Long.toBinaryString(number);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < neededLength - originalStr.length(); i++) {
-            sb.append("0");
-        }
-        sb.append(originalStr);
-        return (sb.toString());
+        return ("0".repeat(Math.max(0, neededLength - originalStr.length())) +
+                originalStr);
     }
 
     /**
@@ -152,58 +169,23 @@ public class EncapsulationHandler {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < number.length(); i++) {
             switch (number.charAt(i)) {
-                case '0':
-                    sb.append("0000");
-                    break;
-                case '1':
-                    sb.append("0001");
-                    break;
-                case '2':
-                    sb.append("0010");
-                    break;
-                case '3':
-                    sb.append("0011");
-                    break;
-                case '4':
-                    sb.append("0100");
-                    break;
-                case '5':
-                    sb.append("0101");
-                    break;
-                case '6':
-                    sb.append("0110");
-                    break;
-                case '7':
-                    sb.append("0111");
-                    break;
-                case '8':
-                    sb.append("1000");
-                    break;
-                case '9':
-                    sb.append("1001");
-                    break;
-                case 'a':
-                    sb.append("1010");
-                    break;
-                case 'b':
-                    sb.append("1011");
-                    break;
-                case 'c':
-                    sb.append("1100");
-                    break;
-                case 'd':
-                    sb.append("1101");
-                    break;
-                case 'e':
-                    sb.append("1110");
-                    break;
-                case 'f':
-                    sb.append("1111");
-                    break;
-                default:
-                    System.out.println("error");
-                    break;
-
+                case '0' -> sb.append("0000");
+                case '1' -> sb.append("0001");
+                case '2' -> sb.append("0010");
+                case '3' -> sb.append("0011");
+                case '4' -> sb.append("0100");
+                case '5' -> sb.append("0101");
+                case '6' -> sb.append("0110");
+                case '7' -> sb.append("0111");
+                case '8' -> sb.append("1000");
+                case '9' -> sb.append("1001");
+                case 'a' -> sb.append("1010");
+                case 'b' -> sb.append("1011");
+                case 'c' -> sb.append("1100");
+                case 'd' -> sb.append("1101");
+                case 'e' -> sb.append("1110");
+                case 'f' -> sb.append("1111");
+                default -> System.out.println("error");
             }
         }
         sb.append("0", 0, neededLength - sb.length());

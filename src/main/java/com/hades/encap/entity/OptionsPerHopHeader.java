@@ -8,14 +8,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class OptionsPerHopHeader extends ExtendedHeader {
-  //  private String nextHeader;
     private String headerExtensionLength;
     private String options;
     private String fill;
-    private String id = "00000000";
 
     public OptionsPerHopHeader() {
-     //   this.generateNextHeader();
         this.generateOptions();
         this.generateFill();
         this.generateHELength();
@@ -31,10 +28,7 @@ public class OptionsPerHopHeader extends ExtendedHeader {
 
     public void generateFill() {
         int length = this.getOptions().length() % 8;
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i <= length - 1; i++)
-            s.append("0");
-        this.setFill(s.toString());
+        this.setFill("0".repeat(length));
     }
 
     public void generateHELength() {
@@ -44,5 +38,13 @@ public class OptionsPerHopHeader extends ExtendedHeader {
         for (int i = 0; i <= length - 1; i++)
             s.insert(0, "0");
         this.setHeaderExtensionLength(s.toString());
+    }
+
+    @Override
+    public String toString() {
+        return this.nextHeader +
+                this.headerExtensionLength +
+                options +
+                fill;
     }
 }

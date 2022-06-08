@@ -5,5 +5,4 @@ import lombok.Setter;
 @Setter
 public class ExtendedHeader {
     protected String nextHeader;
-
 }

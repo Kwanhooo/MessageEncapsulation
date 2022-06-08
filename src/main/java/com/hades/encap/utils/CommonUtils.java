@@ -83,10 +83,31 @@ public class CommonUtils {
                 sb.append("\n");
             }
         }
-        System.out.println("<===== 共 " + ipv6Data.length() + " bit =====>");
+        System.out.println("\n<===== 共 " + ipv6Data.length() + " bit =====>");
         return sb.toString();
     }
 
+    /**
+     * 生成固定位数的随机二进制串
+     */
+    public static String generateRandomBinaryString(int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int r = (int) (Math.random() * 2);
+            sb.append(r);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 将传入的整数转换为指定位数的二进制字符串
+     */
+    public static String longToBinaryString(long num, int length) {
+        String originString = Long.toBinaryString(num);
+        // 补零
+        return "0".repeat(Math.max(0, length - originString.length())) +
+                originString;
+    }
 
     /**
      * 玄学启动
