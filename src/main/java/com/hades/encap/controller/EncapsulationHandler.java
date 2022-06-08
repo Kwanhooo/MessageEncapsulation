@@ -1,17 +1,16 @@
 package com.hades.encap.controller;
 
 import com.hades.encap.constant.IPv6HeaderTypes;
-import com.hades.encap.entity.IPAddress;
-import com.hades.encap.entity.IPv6Header;
-import com.sun.istack.internal.NotNull;
+import com.hades.encap.entity.*;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public class EncapsulationHandler {
-    private IPv6Header basicHeader;
+    private FixedHeader fixedHeader;
 
     /**
      * 主控
@@ -22,13 +21,13 @@ public class EncapsulationHandler {
      */
     public String handle(@NotNull String tcpData) {
         // 构造IPv6报头
-        basicHeader = getIPv6Header(tcpData);
-        log.debug("basicHeader: {}", basicHeader);
+        fixedHeader = getFixedIPv6Header(tcpData);
+        log.debug("basicHeader: {}", fixedHeader);
         // 构造IPv6拓展报头
-        List<IPv6Header> extendedHeaders = getIPv6ExtendedHeaders(tcpData);
+        List<ExtendedHeader> extendedHeaders = getIPv6ExtendedHeaders(tcpData);
         log.debug("extendedHeaders: {}", extendedHeaders);
         // 插入有效载荷
-        return insertPayload(basicHeader, extendedHeaders, tcpData);
+        return insertPayload(fixedHeader, extendedHeaders, tcpData);
     }
 
     /**
@@ -38,8 +37,8 @@ public class EncapsulationHandler {
      * @return IPv6头部
      * @author Kwanho
      */
-    private IPv6Header getIPv6Header(@NotNull String tcpData) {
-        IPv6Header header = new IPv6Header();
+    private FixedHeader getFixedIPv6Header(@NotNull String tcpData) {
+        FixedHeader header = new FixedHeader();
         header.setHeaderType(IPv6HeaderTypes.ENCAPSULATED_IPv6_HEADER);
         header.setVersion(0b0110);//4
         header.setTrafficClass(0b000000_0_0);//8
@@ -59,18 +58,49 @@ public class EncapsulationHandler {
      * @return IPv6拓展头部列表
      * @author Kwanho
      */
-    private List<IPv6Header> getIPv6ExtendedHeaders(@NotNull String tcpData) {
-        List<IPv6Header> extendedHeaders = new ArrayList<>();
-        IPv6Header lastHeader = basicHeader;
-        for (int i = 0; i < 1; i++) {
-            IPv6Header header = getIPv6Header(tcpData);
-            if (lastHeader != null)
-                lastHeader.setNextHeader(header);
-            header.setHeaderType(IPv6HeaderTypes.values()[i]);
-            extendedHeaders.add(header);
-            lastHeader = header;
+    private List<ExtendedHeader> getIPv6ExtendedHeaders(@NotNull String tcpData) {
+        List<ExtendedHeader> headers = new ArrayList<>();
+        ExtendedHeader header;
+        int amount = (int) (Math.random() * 5);
+        ArrayList<Integer> serial = new ArrayList<>();
+        int times = (int) Math.random() * 4;
+        for (int i = 0; i < times; i++) {
+            int rand = (int) (Math.random() * 4);
+            String preNextHeader = "";
+            switch (rand) {
+                case 0:
+                    header = new AuthenticationHeader();
+                    preNextHeader = "00110011";
+                    break;
+                case 1:
+                    header = new FragmentHeader();
+                    preNextHeader = "00101100";
+                    break;
+                case 2:
+                    header = new OptionsPerHopHeader();
+                    preNextHeader = "00000000";
+                    break;
+                case 3:
+                    header = new RouteHeader();
+                    preNextHeader = "00101011";
+                    break;
+                default:
+                    header = null;
+                    break;
+            }
+
+            headers.add(header);
+            if (i == 0) {
+                this.fixedHeader.setNextHeader(preNextHeader);
+            } else if (i != times - 1 && i > 0) {
+                headers.get(i - 1).setNextHeader(preNextHeader);
+            } else if (i == times - 1) {
+                headers.get(i - 1).setNextHeader(preNextHeader);
+                headers.get(i - 1).setNextHeader("00000110");
+            }
         }
-        return extendedHeaders;
+
+        return headers;
     }
 
     /**
@@ -82,7 +112,7 @@ public class EncapsulationHandler {
      * @return 二进制的IPv6报文数据
      * @author Kwanho
      */
-    private String insertPayload(IPv6Header basicHeader, List<IPv6Header> extendedHeader, String tcpData) {
+    private String insertPayload(FixedHeader basicHeader, List<ExtendedHeader> extendedHeader, String tcpData) {
         String sb = getHeaderBinaryString(basicHeader);
 
         // 把tcp数据转换成二进制字符串
@@ -186,7 +216,7 @@ public class EncapsulationHandler {
      * @param header 头部
      * @return 二进制字符串
      */
-    private String getHeaderBinaryString(IPv6Header header) {
+    private String getHeaderBinaryString(FixedHeader header) {
         StringBuilder sb = new StringBuilder();
         String version = getFixedBinaryString(header.getVersion(), 4);
         log.info("version: " + version);
@@ -200,7 +230,7 @@ public class EncapsulationHandler {
         String payloadLength = getFixedBinaryString((long) header.getPayloadLength(), 16);
         log.info("payloadLength: " + payloadLength);
         sb.append(payloadLength);
-        String nextHeader = getFixedBinaryString((long) header.getNextHeader().getHeaderType().getCode(), 8);
+        String nextHeader = header.getNextHeader();
         log.info("nextHeader: " + nextHeader);
         sb.append(nextHeader);
         String hopLimit = getFixedBinaryString((long) header.getHopLimit(), 8);

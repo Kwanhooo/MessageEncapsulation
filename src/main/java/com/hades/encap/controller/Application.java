@@ -1,5 +1,7 @@
 package com.hades.encap.controller;
 
+import com.hades.encap.entity.AuthenticationHeader;
+import com.hades.encap.entity.ExtendedHeader;
 import com.hades.encap.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -23,7 +25,7 @@ public class Application {
         new Thread(CommonUtils::bugsGoAway).start();
 
         // 命令行参数检查
-        assert args.length == 2;
+        assert args.length == 2 : "命令行参数有误！";
 
         // 获得参数
         String tcpDataFile = args[0].trim();
@@ -57,4 +59,6 @@ public class Application {
         }
         log.info("已写入IPv6数据文件：{}", ipv6File.getAbsoluteFile());
     }
+
+    ExtendedHeader extendedHeader = new AuthenticationHeader();
 }
