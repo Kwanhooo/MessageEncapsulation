@@ -50,8 +50,13 @@ public class EncapsulationHandler {
         header.setPayloadLength(tcpData.length());//16
         header.setNextHeader(null);//8
         header.setHopLimit(255);//8
-        header.setSourceAddress(new IPAddress("0123:4567:89ab:cdef:0123:4567:89ab:cdef"));//128
-        header.setDestinationAddress(new IPAddress("0123:4567:89ab:cdef:0123:4567:89ab:cdef"));//128
+//        header.setSourceAddress(new IPAddress("0123:4567:89ab:cdef:0123:4567:89ab:cdef"));//128
+//        header.setDestinationAddress(new IPAddress("0123:4567:89ab:cdef:0123:4567:89ab:cdef"));//128
+//
+
+        header.setSourceAddress(new IPAddress(Application.srcIP));
+        header.setDestinationAddress(new IPAddress(Application.dstIP));
+
         return header;
     }
 
@@ -132,8 +137,7 @@ public class EncapsulationHandler {
         if (tcpData.matches("^[0-9a-fA-F]+$")) {
             log.info("传入的是16进制的TCP数据");
             binaryTCPData = getFixedBinaryString(tcpData, tcpData.length() * 4);
-        }
-        else {
+        } else {
             log.info("传入的是二进制的TCP数据");
             binaryTCPData = tcpData;
         }
@@ -219,11 +223,23 @@ public class EncapsulationHandler {
         log.info("hopLimit: " + hopLimit);
         sb.append(hopLimit);
         String sourceAddress = header.getSourceAddress().getBinaryAddress();
+
+
         log.info("sourceAddress: " + sourceAddress);
         sb.append(sourceAddress);
+
+
         String destinationAddress = header.getDestinationAddress().getBinaryAddress();
+        StringBuffer ss = new StringBuffer();
+        ss.append("0".repeat(Math.max(0, 128 - destinationAddress.length())));
+        ss.append(sourceAddress);
+        destinationAddress = ss.toString();
+
+
         log.info("destinationAddress: " + destinationAddress);
         sb.append(destinationAddress);
         return sb.toString();
     }
+
+
 }

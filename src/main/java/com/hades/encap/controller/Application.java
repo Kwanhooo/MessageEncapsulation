@@ -1,17 +1,24 @@
 package com.hades.encap.controller;
 
-import com.hades.encap.utils.CommonUtils;
+import com.hades.encap.constant.IPv6HeaderTypes;
+import com.hades.encap.utils.IpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
+import static com.hades.encap.controller.EncapsulationHandler.getFixedBinaryString;
 import static com.hades.encap.utils.CommonUtils.prettyPrint;
 
 @Slf4j
 public class Application {
+    public static String srcIP;
+    public static String dstIP;
+
+
     /**
      * 全局入口
      *
@@ -20,10 +27,23 @@ public class Application {
      * @author Kwanho
      */
     public static void main(String[] args) {
-        new Thread(CommonUtils::bugsGoAway).start();
+//        new Thread(CommonUtils::bugsGoAway).start();
 
         // 命令行参数检查
         assert args.length == 2 : "命令行参数有误！";
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("请输入要请求的地址：(输入#随机生成)");
+        String domain = scanner.next();
+        if (domain.equals("#")) {
+            System.out.println("您没有输入请求地址，随机生成一个目的地址...");
+            srcIP = IpUtil.getRandomIp();
+            dstIP = IpUtil.getRandomIp();
+        } else {
+            srcIP = IpUtil.getRandomIp();
+            dstIP = IpUtil.domainToIp(domain);
+        }
+
 
         // 获得参数
         String tcpDataFile = args[0].trim();
@@ -58,5 +78,35 @@ public class Application {
             throw new RuntimeException(e);
         }
         log.info("已写入IPv6数据文件：{}", ipv6File.getAbsoluteFile());
+
+        // 以下生成伪报头
+        String fakeSrcIp = getBinaryAddress(srcIP);
+        String fakeDstIp = getBinaryAddress(dstIP);
+        String nextHead = getFixedBinaryString((long) IPv6HeaderTypes.TCP.getCode(), 8);
+        String zero = "0".repeat(24);
+        String length = getFixedBinaryString((long) (tcpData.length() + 40 * 32), 32);
+
+        String fakeAll = fakeSrcIp + fakeDstIp + zero + length + nextHead;
+
+        System.out.println();
+        System.out.println("<==          伪报头          ==>");
+        for (int i = 0; i < fakeAll.length(); i++) {
+            System.out.print(fakeAll.charAt(i));
+            if ((i + 1) % 32 == 0) {
+                System.out.println();
+            }
+        }
+        System.out.println("<==       共 " + fakeAll.length() + " bits       ==>");
+    }
+
+    public static String getBinaryAddress(String ip) {
+        String[] ipArray = ip.split(":");
+        StringBuilder sb = new StringBuilder();
+        for (String i : ipArray) {
+            if (i.equals(""))
+                i = "0";
+            sb.append(getFixedBinaryString(Long.parseLong(i, 16), 16));
+        }
+        return sb.toString();
     }
 }

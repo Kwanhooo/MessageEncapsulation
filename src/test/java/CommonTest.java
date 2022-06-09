@@ -25,4 +25,10 @@ public class CommonTest {
         String s = scanner.next();
         System.out.println(s.length());
     }
+
+    @Test
+    public void testDomain() {
+        String domain = "www.baidu.com";
+        System.out.println(CommonUtils.domainToIp(domain));
+    }
 }
